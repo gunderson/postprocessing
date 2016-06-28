@@ -1,9 +1,9 @@
-# Post Processing 
-[![Build status](https://travis-ci.org/vanruesc/postprocessing.svg?branch=master)](https://travis-ci.org/vanruesc/postprocessing) 
-[![npm version](https://badge.fury.io/js/postprocessing.svg)](http://badge.fury.io/js/postprocessing) 
+# Post Processing
+[![Build status](https://travis-ci.org/vanruesc/postprocessing.svg?branch=master)](https://travis-ci.org/vanruesc/postprocessing)
+[![npm version](https://badge.fury.io/js/postprocessing.svg)](http://badge.fury.io/js/postprocessing)
 [![Dependencies](https://david-dm.org/vanruesc/postprocessing.svg?branch=master)](https://david-dm.org/vanruesc/postprocessing)
 
-A post processing library that provides the means to implement 2D filter effects for three.js. 
+A post processing library that provides the means to implement 2D filter effects for three.js.
 
 
 ## Preface
@@ -13,8 +13,8 @@ This module uses modern ECMAScript features and requires one of the following br
  - Firefox ≥ 45
  - IE Edge ≥ 13
 
-[Semantic versioning](http://semver.org/) is used in this module to indicate whether an update 
-introduces breaking changes. However, backwards-compatibility regarding ECMAScript versions is 
+[Semantic versioning](http://semver.org/) is used in this module to indicate whether an update
+introduces breaking changes. However, backwards-compatibility regarding ECMAScript versions is
 entirely neglected in favor of cleaner code and development convenience.
 
 
@@ -22,7 +22,7 @@ entirely neglected in favor of cleaner code and development convenience.
 
 ```sh
 $ npm install postprocessing
-``` 
+```
 
 
 ## Usage
@@ -50,7 +50,7 @@ let lastTime = performance.now();
 }());
 ```
 
-In order to create your own passes, you simply need to extend the 
+In order to create your own passes, you simply need to extend the
 [Pass](http://vanruesc.github.io/postprocessing/docs/files/src_passes_pass.js.html) class:
 
 ```javascript
@@ -91,7 +91,7 @@ export class MyPass extends Pass {
 
 ```
 Passes don't have to use the buffers that are provided in the render method. 
-Writing self-contained render-to-texture passes is also a feasable option.
+Writing self-contained render-to-texture passes is also a feasible option.
 
 
 ## Included Filters
@@ -115,9 +115,9 @@ Maintain the existing coding style. Add unit tests for any new or changed functi
 
 ## License
 This library is licensed under the [Zlib license](https://github.com/vanruesc/postprocessing/blob/master/LICENSE).  
-The original code that this library is based on, was written by [alteredq](http://alteredqualia.com), 
-[miibond](https://github.com/MiiBond), [zz85](https://github.com/zz85), 
-[felixturner](http://airtight.cc) and [huwb](http://huwbowles.com) 
+The original code that this library is based on, was written by [alteredq](http://alteredqualia.com),
+[miibond](https://github.com/MiiBond), [zz85](https://github.com/zz85),
+[felixturner](http://airtight.cc) and [huwb](http://huwbowles.com)
 and is licensed under the [MIT license](https://github.com/mrdoob/three.js/blob/master/LICENSE).  
-The film effect incorporates code written by Georg Steinrohder and Pat Shearon which was released under the 
+The film effect incorporates code written by Georg Steinrohder and Pat Shearon which was released under the
 [Creative Commons Attribution 3.0 License](http://creativecommons.org/licenses/by/3.0/).  
