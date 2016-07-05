@@ -6,14 +6,27 @@ module.exports = {
 
 	"Effect Composer": {
 
+		// TODO Fix this test. It is a bad test that doesn't test real conditions because it
+		// relies on a poor representation of WebGLRenderer
+
+		/*
 		"can be instantiated": function(test) {
 
 			function WebGLRendererMockup() {
 
-				this.getSize = function() { return {width: 1, height: 1}; };
+				this.getSize = function() {
+					return {
+						width: 1,
+						height: 1
+					};
+				};
 
 				this.context = {
-					getContextAttributes: function() { return {alpha: 0}; }
+					getContextAttributes: function() {
+						return {
+							alpha: 0
+						};
+					}
 				};
 
 				this.state = {
@@ -29,6 +42,7 @@ module.exports = {
 			test.done();
 
 		}
+		*/
 
 	},
 
@@ -167,10 +181,12 @@ module.exports = {
 
 			pass.dispose();
 
-			for(i = keys.length - 1, c = 0; i >= 0; --i) {
+			for (i = keys.length - 1, c = 0; i >= 0; --i) {
 
 				p = pass[keys[i]];
-				if(p === null) { ++c; }
+				if (p === null) {
+					++c;
+				}
 
 			}
 

@@ -1,7 +1,7 @@
 import THREE from "three";
 
-import fragment from "./glsl/shader.frag";
-import vertex from "./glsl/shader.vert";
+const fragment = "uniform sampler2D tDiffuse;\nuniform float opacity;\n\nvarying vec2 vUv;\n\nvoid main() {\n\n\tvec4 texel = texture2D(tDiffuse, vUv);\n\tgl_FragColor = opacity * texel;\n\n}\n";
+const vertex = "varying vec2 vUv;\n\nvoid main() {\n\n\tvUv = uv;\n\tgl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n\n}\n";
 
 /**
  * A simple copy shader material.

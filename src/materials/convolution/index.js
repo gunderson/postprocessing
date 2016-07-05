@@ -1,7 +1,7 @@
 import THREE from "three";
 
-import fragment from "./glsl/shader.frag";
-import vertex from "./glsl/shader.vert";
+const fragment = "uniform sampler2D tDiffuse;\n\nvarying vec2 vUv0;\nvarying vec2 vUv1;\nvarying vec2 vUv2;\nvarying vec2 vUv3;\n\nvoid main() {\n\n\t// Sample top left texel.\n\tvec4 sum = texture2D(tDiffuse, vUv0);\n\n\t// Sample top right texel.\n\tsum += texture2D(tDiffuse, vUv1);\n\n\t// Sample bottom right texel.\n\tsum += texture2D(tDiffuse, vUv2);\n\n\t// Sample bottom left texel.\n\tsum += texture2D(tDiffuse, vUv3);\n\n\t// Compute the average.\n\tgl_FragColor = sum * 0.25;\n\n}\n";
+const vertex = "uniform vec2 texelSize;\nuniform vec2 halfTexelSize;\nuniform float kernel;\n\nvarying vec2 vUv0;\nvarying vec2 vUv1;\nvarying vec2 vUv2;\nvarying vec2 vUv3;\n\nvoid main() {\n\n\tvec2 dUv = (texelSize * vec2(kernel)) + halfTexelSize;\n\n\tvUv0 = vec2(uv.x - dUv.x, uv.y + dUv.y);\n\tvUv1 = vec2(uv.x + dUv.x, uv.y + dUv.y);\n\tvUv2 = vec2(uv.x + dUv.x, uv.y - dUv.y);\n\tvUv3 = vec2(uv.x - dUv.x, uv.y - dUv.y);\n\n\tgl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n\n}\n";
 
 /**
  * A convolution blur shader material.

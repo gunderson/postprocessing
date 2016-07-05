@@ -1,4 +1,6 @@
-import { Pass } from "./pass";
+import {
+	Pass
+} from "./pass";
 import THREE from "three";
 
 /**
@@ -13,7 +15,7 @@ import THREE from "three";
 const CLEAR_COLOR = new THREE.Color();
 
 /**
- * A pass that renders a given scene directly on screen or into the read buffer 
+ * A pass that renders a given scene directly on screen or into the read buffer
  * for further processing.
  *
  * @class RenderPass
@@ -34,7 +36,11 @@ export class RenderPass extends Pass {
 
 		super(scene, camera, null);
 
-		if(options === undefined) { options = {}; }
+		options = options || {
+			renderToScreen: false
+		};
+
+		this.needsSwap = false;
 
 		/**
 		 * Override material.
@@ -92,7 +98,7 @@ export class RenderPass extends Pass {
 
 		this.scene.overrideMaterial = this.overrideMaterial;
 
-		if(this.clearColor !== null) {
+		if (this.clearColor !== null) {
 
 			CLEAR_COLOR.copy(renderer.getClearColor());
 			clearAlpha = renderer.getClearAlpha();
@@ -100,7 +106,7 @@ export class RenderPass extends Pass {
 
 		}
 
-		if(this.renderToScreen) {
+		if (this.renderToScreen) {
 
 			renderer.render(this.scene, this.camera, null, this.clear);
 
@@ -110,7 +116,7 @@ export class RenderPass extends Pass {
 
 		}
 
-		if(this.clearColor !== null) {
+		if (this.clearColor !== null) {
 
 			renderer.setClearColor(CLEAR_COLOR, clearAlpha);
 

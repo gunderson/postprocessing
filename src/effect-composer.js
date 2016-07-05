@@ -1,21 +1,21 @@
 import {
-	ClearMaskPass,
-	MaskPass,
-	ShaderPass
+	BranchPass,
+	MergePass
 } from "./passes";
 
-import { CopyMaterial } from "./materials";
-import THREE from "three";
+import {
+	Branch
+} from "./branch";
 
 /**
  * The EffectComposer may be used in place of a normal WebGLRenderer.
  *
- * It will disable the auto clear behaviour of the provided renderer to prevent 
- * unnecessary clear operations. The depth buffer will also be disabled for 
+ * It will disable the auto clear behaviour of the provided renderer to prevent
+ * unnecessary clear operations. The depth buffer will also be disabled for
  * writing. Passes that rely on the depth test must explicitly enable it.
  *
- * You may want to use a {{#crossLink "RenderPass"}}{{/crossLink}} as your first 
- * pass to automatically clear the screen and render the scene to a texture for 
+ * You may want to use a {{#crossLink "RenderPass"}}{{/crossLink}} as your first
+ * pass to automatically clear the screen and render the scene to a texture for
  * further processing.
  *
  * @class EffectComposer
@@ -29,95 +29,25 @@ import THREE from "three";
 export class EffectComposer {
 
 	constructor(renderer, depthTexture, stencilBuffer) {
-
-		if(depthTexture === undefined) { depthTexture = false; }
-		if(stencilBuffer === undefined) { stencilBuffer = false; }
-
 		/**
-		 * The renderer.
+		 * The render branches
 		 *
-		 * @property renderer
-		 * @type WebGLRenderer
-		 */
-
-		this.renderer = (renderer !== undefined) ? renderer : new THREE.WebGLRenderer();
-
-		this.renderer.autoClear = false;
-		this.renderer.state.setDepthWrite(false);
-
-		/**
-		 * The read buffer.
-		 *
-		 * Reading from and writing to the same render target should be avoided. 
-		 * Therefore, two seperate, yet identical buffers are used.
-		 *
-		 * @property readBuffer
-		 * @type WebGLRenderTarget
+		 * @property branches
+		 * @type object
 		 * @private
 		 */
-
-		this.readBuffer = this.createBuffer(stencilBuffer);
-
-		this.readBuffer.texture.generateMipmaps = false;
-
-		/**
-		 * The write buffer.
-		 *
-		 * @property writeBuffer
-		 * @type WebGLRenderTarget
-		 * @private
-		 */
-
-		this.writeBuffer = this.readBuffer.clone();
-
-		if(depthTexture) {
-
-			this.readBuffer.depthTexture = this.writeBuffer.depthTexture = new THREE.DepthTexture();
-
-		}
-
-		/**
-		 * A copy pass used for copying masked scenes.
-		 *
-		 * @property copyPass
-		 * @type ShaderPass
-		 * @private
-		 */
-
-		this.copyPass = new ShaderPass(new CopyMaterial());
-
-		/**
-		 * The render passes.
-		 *
-		 * @property passes
-		 * @type Array
-		 * @private
-		 */
-
-		this.passes = [];
-
-	}
-
-	/**
-	 * Creates a new render target by replicating the renderer's canvas.
-	 *
-	 * @method createBuffer
-	 * @param {Boolean} stencilBuffer - Whether the render target should have a stencil buffer.
-	 * @return {WebGLRenderTarget} A fresh render target that equals the renderer's canvas.
-	 */
-
-	createBuffer(stencilBuffer) {
-
-		let size = this.renderer.getSize();
-		let alpha = this.renderer.context.getContextAttributes().alpha;
-
-		return new THREE.WebGLRenderTarget(size.width, size.height, {
-			minFilter: THREE.LinearFilter,
-			magFilter: THREE.LinearFilter,
-			format: alpha ? THREE.RGBAFormat : THREE.RGBFormat,
-			stencilBuffer: stencilBuffer
+		this.renderer = renderer;
+		this.branches = {};
+		// keep existing constructor syntax for backward compatibility
+		this.branch(renderer, 'main', {
+			depthTexture,
+			stencilBuffer
 		});
 
+		// moved the rest of this function to Branch
+
+		// make chainable
+		return this;
 	}
 
 	/**
@@ -128,19 +58,63 @@ export class EffectComposer {
 	 * @param {Number} [index] - An index at which the pass should be inserted.
 	 */
 
-	addPass(pass, index) {
-
-		pass.initialise(this.renderer, this.renderer.context.getContextAttributes().alpha);
-
-		if(index !== undefined) {
-
-			this.passes.splice(index, 0, pass);
-
-		}	else {
-
-			this.passes.push(pass);
-
+	addPass(pass, index, branchName) {
+		branchName = branchName || 'main';
+		let branch = this.branches[branchName];
+		if (!branch) {
+			// automatically create a new branch if one doesn't exist
+			branch = this.branch(this.renderer, branchName);
 		}
+
+		branch.addPass(pass, index, branchName);
+		return this;
+	}
+
+
+	/**
+	 * Creates a branched render chain
+	 *
+	 * @method branch
+	 * @param {String} [branchName='branch'] - Name of the branch
+	 * @param {WebGLRenderer || WebGLRenderTarget} [renderer] - the renderer to draw from
+	 * @param {Object} [options] - an options hash
+	 */
+
+	branch(renderer, branchName, options) {
+		renderer = renderer || this.renderer;
+		branchName = branchName || 'branch';
+		if (this.branches[branchName]) {
+			// if branchname already exists, increment and create a new branch
+			let i = 0;
+			let newBranchName = branchName;
+			while (this.branches[newBranchName]) {
+				newBranchName = `${branchName}_${++i}`;
+			}
+			branchName = newBranchName;
+			// throw new Error(`Branch "${branchName}" already exists`);
+		}
+		let branch = this.branches[branchName] = new Branch(renderer, branchName, options);
+		this.addPass(new BranchPass(branch), null, branchName);
+		return branch;
+	}
+
+	/**
+	 * Merges a branched render chain back to the chain from which it was branched
+	 *
+	 * Sets the result of the render chain as its writeBuffer, and sets the value as a texture
+	 * in the subsequent pass
+	 *
+	 * @method merge
+	 * @param {String} [branchName='branch'] - Name of the branch
+	 * @param {String} [textureName='texture0'] - Name of the texture to give to next pass
+	 */
+
+	merge(branch, combineShader, options) {
+		branch = branch instanceof Branch ? branch : this.branches[branch];
+		if (!branch) {
+			throw new Error(`Branch "${branch}" does not exist.`, branch);
+		}
+		this.addPass(new MergePass(branch, combineShader, options));
 
 	}
 
@@ -151,9 +125,11 @@ export class EffectComposer {
 	 * @param {Pass} pass - The pass.
 	 */
 
-	removePass(pass) {
+	removePass(pass, branchName) {
 
-		this.passes.splice(this.passes.indexOf(pass), 1);
+		branchName = branchName || 'main';
+
+		this.branches[branchName].passes.splice(this.branches[branchName].passes.indexOf(pass), 1);
 
 	}
 
@@ -165,63 +141,19 @@ export class EffectComposer {
 	 */
 
 	render(delta) {
+		this.branches.main.render(delta);
 
-		let readBuffer = this.readBuffer;
-		let writeBuffer = this.writeBuffer;
-
-		let maskActive = false;
-		let i, l, pass, buffer;
-		let ctx, state;
-
-		for(i = 0, l = this.passes.length; i < l; ++i) {
-
-			pass = this.passes[i];
-
-			if(pass.enabled) {
-
-				pass.render(this.renderer, readBuffer, writeBuffer, delta, maskActive);
-
-				if(pass.needsSwap) {
-
-					if(maskActive) {
-
-						ctx = this.renderer.context;
-						state = this.renderer.state;
-						state.setStencilFunc(ctx.NOTEQUAL, 1, 0xffffffff);
-						this.copyPass.render(this.renderer, readBuffer, writeBuffer);
-						state.setStencilFunc(ctx.EQUAL, 1, 0xffffffff);
-
-					}
-
-					buffer = readBuffer;
-					readBuffer = writeBuffer;
-					writeBuffer = buffer;
-
-				}
-
-				if(pass instanceof MaskPass) {
-
-					maskActive = true;
-
-				} else if(pass instanceof ClearMaskPass) {
-
-					maskActive = false;
-
-				}
-
-			}
-
-		}
+		return this;
 
 	}
 
 	/**
 	 * Sets the size of the buffers and the renderer's output canvas.
 	 *
-	 * Every pass will be informed of the new size. It's up to each pass how that 
-	 * information is used.
+	 * Every pass in every branch will be informed of the new size. It's up to each
+	 * pass how that information is used.
 	 *
-	 * If no width or height is specified, the render targets and passes will be 
+	 * If no width or height is specified, the render targets and passes will be
 	 * updated with the current size of the renderer.
 	 *
 	 * @method setSize
@@ -231,27 +163,13 @@ export class EffectComposer {
 
 	setSize(width, height) {
 
-		let i, l;
-		let size;
+		for (let key in this.branches) {
 
-		if(width === undefined || height === undefined) {
-
-			size = this.renderer.getSize();
-			width = size.width;
-			height = size.height;
+			this.branches[key].setSize(width, height);
 
 		}
 
-		this.renderer.setSize(width, height);
-		this.readBuffer.setSize(width, height);
-		this.writeBuffer.setSize(width, height);
-
-		for(i = 0, l = this.passes.length; i < l; ++i) {
-
-			this.passes[i].setSize(width, height);
-
-		}
-
+		return this;
 	}
 
 	/**
@@ -263,14 +181,19 @@ export class EffectComposer {
 
 	reset(renderTarget) {
 
-		this.dispose((renderTarget === undefined) ? this.createBuffer() : renderTarget);
+		for (let key in this.branches) {
 
+			this.branches[key].dispose(renderTarget);
+
+		}
+
+		return this;
 	}
 
 	/**
-	 * Destroys all passes and render targets.
+	 * Destroys all branches ,passes and render targets.
 	 *
-	 * This method deallocates all render targets, textures and materials created 
+	 * This method deallocates all render targets, textures and materials created
 	 * by the passes. It also deletes this composer's frame buffers.
 	 *
 	 * Note: the reset method uses the dispose method internally.
@@ -281,29 +204,15 @@ export class EffectComposer {
 
 	dispose(renderTarget) {
 
-		this.readBuffer.dispose();
-		this.writeBuffer.dispose();
+		for (let key in this.branches) {
 
-		this.readBuffer = this.writeBuffer = null;
-
-		while(this.passes.length > 0) {
-
-			this.passes.pop().dispose();
+			this.branches[key].dispose(renderTarget);
 
 		}
 
-		if(renderTarget !== undefined) {
+		this.branches = {};
 
-			// Reanimate.
-			this.readBuffer = renderTarget;
-			this.writeBuffer = this.readBuffer.clone();
-
-		} else {
-
-			this.copyPass.dispose();
-
-		}
-
+		return this;
 	}
 
 }

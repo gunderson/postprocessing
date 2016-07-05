@@ -5,25 +5,36 @@
  * @main postprocessing
  */
 
-export { EffectComposer } from "./effect-composer";
+export {
+	EffectComposer
+}
+from "./effect-composer";
+
+export {
+	Branch
+}
+from "./branch";
 
 export {
 	BloomPass,
 	BokehPass,
 	Bokeh2Pass,
+	BranchPass,
 	ClearMaskPass,
 	DotScreenPass,
 	FilmPass,
 	GlitchPass,
 	GodRaysPass,
 	MaskPass,
+	MergePass,
 	Pass,
 	RenderPass,
 	SavePass,
 	SMAAPass,
 	ShaderPass,
 	ToneMappingPass
-} from "./passes";
+}
+from "./passes";
 
 export {
 	AdaptiveLuminosityMaterial,
@@ -41,4 +52,5 @@ export {
 	SMAAColorEdgesMaterial,
 	SMAAWeightsMaterial,
 	ToneMappingMaterial
-} from "./materials";
+}
+from "./materials";

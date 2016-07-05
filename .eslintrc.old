@@ -18,8 +18,7 @@
 		"window": false,
 		"TEMPLATES": true,
 		"GLOBALS": true,
-		"APP": true,
-		"THREE": true
+		"APP": true
 	},
 	"rules": {
 		"accessor-pairs": 2,
@@ -227,7 +226,7 @@
 			"always"
 		],
 		"quotes": [
-			0,
+			2,
 			"single",
 			"avoid-escape"
 		],
@@ -251,7 +250,7 @@
 		],
 		"space-in-parens": [
 			2,
-			"never"
+			"always"
 		],
 		"space-infix-ops": 2,
 		"space-unary-ops": [

@@ -1,4 +1,6 @@
-import { Pass } from "./pass";
+import {
+	Pass
+} from "./pass";
 import THREE from "three";
 
 /**
@@ -24,7 +26,7 @@ export class ShaderPass extends Pass {
 
 		/**
 		 * The name of the color sampler uniform of the given material.
-	   * The read buffer will be bound to this.
+		 * The read buffer will be bound to this.
 		 *
 		 * @property textureID
 		 * @type String
@@ -57,13 +59,13 @@ export class ShaderPass extends Pass {
 
 	render(renderer, readBuffer, writeBuffer) {
 
-		if(this.material.uniforms[this.textureID] !== undefined) {
+		if (this.material.uniforms[this.textureID] !== undefined) {
 
 			this.material.uniforms[this.textureID].value = readBuffer.texture;
 
 		}
 
-		if(this.renderToScreen) {
+		if (this.renderToScreen) {
 
 			renderer.render(this.scene, this.camera);
 
