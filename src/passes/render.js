@@ -40,6 +40,8 @@ export class RenderPass extends Pass {
 			renderToScreen: false
 		};
 
+		this.renderToScreen = options.renderToScreen;
+
 		this.needsSwap = false;
 
 		/**

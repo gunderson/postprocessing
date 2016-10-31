@@ -83,6 +83,8 @@ export class EffectComposer {
 	branch(renderer, branchName, options) {
 		renderer = renderer || this.renderer;
 		branchName = branchName || 'branch';
+		options = options || {};
+
 		if (this.branches[branchName]) {
 			// if branchname already exists, increment and create a new branch
 			let i = 0;
@@ -93,9 +95,12 @@ export class EffectComposer {
 			branchName = newBranchName;
 			// throw new Error(`Branch "${branchName}" already exists`);
 		}
+		// register branch
 		let branch = this.branches[branchName] = new Branch(renderer, branchName, options);
 		this.addPass(new BranchPass(branch), null, branchName);
-		return branch;
+
+		if (options.chain === false) return branch;
+		return this;
 	}
 
 	/**
@@ -109,13 +114,18 @@ export class EffectComposer {
 	 * @param {String} [textureName='texture0'] - Name of the texture to give to next pass
 	 */
 
-	merge(branch, combineShader, options) {
-		branch = branch instanceof Branch ? branch : this.branches[branch];
-		if (!branch) {
-			throw new Error(`Branch "${branch}" does not exist.`, branch);
+	merge(branchFrom, branchTo, combineShader, options) {
+		// recall branch or allow to pass a branch directly
+		branchFrom = branchFrom instanceof Branch ? branchFrom : this.branches[branchFrom];
+		branchTo = branchTo instanceof Branch ? branchTo : this.branches[branchTo];
+		if (!branchFrom) {
+			throw new Error(`Branch "${branchFrom}" does not exist.`, branchFrom);
 		}
-		this.addPass(new MergePass(branch, combineShader, options));
-
+		if (!branchTo) {
+			throw new Error(`Branch "${branchTo}" does not exist.`, branchTo);
+		}
+		this.addPass(new MergePass(branchFrom, branchTo, combineShader, options));
+		return this;
 	}
 
 	/**

@@ -22,16 +22,20 @@ import {
 
 export class MergePass extends Pass {
 
-	constructor(branch, MixMaterial, options) {
+	constructor(branchFrom, branchTo, MixMaterial, options) {
 
 		super();
 
-		this.branch = branch;
+		this.branchFrom = branchFrom;
+		this.branchTo = branchTo;
+
+		console.log(branchFrom, branchTo);
+
 		this.needsSwap = true;
 
 		if (!(MixMaterial instanceof THREE.ShaderMaterial)) {
 			// default to CombineMaterial
-			if (typeof combineMaterial === 'object') {
+			if (typeof MixMaterial === 'object') {
 				options = MixMaterial;
 			}
 			MixMaterial = CombineMaterial;
@@ -73,7 +77,7 @@ export class MergePass extends Pass {
 
 	render(renderer, readBuffer, writeBuffer) {
 		var texture0 = readBuffer.texture;
-		var texture1 = this.branch.originalReadBuffer.texture;
+		var texture1 = this.branchTo.readBuffer.texture;
 
 		// distribute defaults and options
 		this.options.uniforms.forEach((uniform) => {
