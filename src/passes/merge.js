@@ -5,7 +5,7 @@ import {
 import {
 	Pass
 } from "./pass";
-// import THREE from "three";
+import THREE from "three";
 
 /**
  * A shader pass.
@@ -76,8 +76,8 @@ export class MergePass extends Pass {
 	 */
 
 	render(renderer, readBuffer, writeBuffer) {
-		var texture0 = readBuffer.texture;
-		var texture1 = this.branchTo.readBuffer.texture;
+		let texture0 = readBuffer.texture;
+		let texture1 = this.branchTo.readBuffer.texture;
 
 		// distribute defaults and options
 		this.options.uniforms.forEach((uniform) => {

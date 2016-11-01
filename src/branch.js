@@ -7,7 +7,7 @@ import {
 import {
 	CopyMaterial
 } from "./materials";
-// import THREE from "three";
+import THREE from "three";
 
 /**
  * A Branch is an independant render chain that passes the last pass in its chain as a texture to a MergePass

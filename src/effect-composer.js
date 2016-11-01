@@ -99,7 +99,7 @@ export class EffectComposer {
 		let branch = this.branches[branchName] = new Branch(renderer, branchName, options);
 		this.addPass(new BranchPass(branch), null, branchName);
 
-		if (options.chain === false) return branch;
+		if (options.chain === false) { return branch; }
 		return this;
 	}
 

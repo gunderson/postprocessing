@@ -1,5 +1,5 @@
 /**
- * postprocessing v1.1.2 build Jul 04 2016
+ * postprocessing v1.1.2 build Oct 31 2016
  * https://github.com/vanruesc/postprocessing
  * Copyright 2016 Raoul van Rüschen, Zlib
  */
@@ -1143,7 +1143,7 @@
      * @default Scene()
      */
 
-  		this.scene = scene || new THREE.Scene();
+  		this.scene = scene !== undefined ? scene : new THREE.Scene();
 
   		/**
      * The camera to render with.
@@ -1154,7 +1154,7 @@
      * @default OrthographicCamera(-1, 1, 1, -1, 0, 1)
      */
 
-  		this.camera = camera || new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  		this.camera = camera !== undefined ? camera : new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
   		/**
      * The quad mesh to use for rendering.
@@ -1169,7 +1169,7 @@
      *  this.quad.material = this.myMaterial;
      */
 
-  		this.quad = quad || new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2), null);
+  		this.quad = quad !== undefined ? quad : new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2), null);
 
   		/**
      * Indicates whether the read and write buffers should be swapped after this
@@ -1812,8 +1812,7 @@
   			this.branch.originalReadBuffer = readBuffer;
   			this.branch.writeBuffer = writeBuffer.clone();
   			this.branch.readBuffer = readBuffer.clone();
-  			this.branch.render(delta);
-  			return this.branch.writeBuffer;
+  			return this.branch;
   		}
   	}]);
   	return BranchPass;
@@ -2116,14 +2115,12 @@
   		var _this = possibleConstructorReturn(this, Object.getPrototypeOf(GlitchPass).call(this));
 
   		_this.needsSwap = true;
-
   		if (options === undefined) {
   			options = {};
   		}
   		if (options.dtSize === undefined) {
   			options.dtSize = 64;
   		}
-
   		/**
      * Glitch shader material.
      *
@@ -2131,16 +2128,14 @@
      * @type GlitchMaterial
      * @private
      */
-
   		_this.material = new GlitchMaterial();
-
   		_this.quad.material = _this.material;
 
   		/**
      * A perturbation map.
      *
      * If none is provided, a noise texture will be created.
-     * The texture will automatically be destroyed when the 
+     * The texture will automatically be destroyed when the
      * EffectComposer is deleted.
      *
      * @property perturbMap
@@ -2148,12 +2143,10 @@
      */
 
   		if (options.perturbMap !== undefined) {
-
   			_this.perturbMap = options.perturbMap;
   			_this.perturbMap.generateMipmaps = false;
   			_this.material.uniforms.tPerturb.value = _this.perturbMap;
   		} else {
-
   			_this.perturbMap = null;
   			_this.generatePerturbMap(options.dtSize);
   		}
@@ -2167,7 +2160,6 @@
      * @type GlitchPass.Mode
      * @default GlitchPass.Mode.SPORADIC
      */
-
   		_this.mode = GlitchPass.Mode.SPORADIC;
 
   		/**
@@ -2177,7 +2169,6 @@
      * @type Number
      * @private
      */
-
   		_this.counter = 0;
 
   		/**
@@ -2187,7 +2178,6 @@
      * @type Number
      * @private
      */
-
   		_this.breakPoint = 0;
   		_this.generateTrigger();
 
@@ -2206,15 +2196,12 @@
   	createClass(GlitchPass, [{
   		key: "render",
   		value: function render(renderer, readBuffer, writeBuffer) {
-
   			var uniforms = this.material.uniforms;
-
   			uniforms.tDiffuse.value = readBuffer.texture;
   			uniforms.seed.value = Math.random();
   			uniforms.active.value = true;
 
   			if (this.counter % this.breakPoint === 0 || this.mode === GlitchPass.Mode.CONSTANT_WILD) {
-
   				uniforms.amount.value = Math.random() / 30.0;
   				uniforms.angle.value = THREE.Math.randFloat(-Math.PI, Math.PI);
   				uniforms.seedX.value = THREE.Math.randFloat(-1.0, 1.0);
@@ -2224,7 +2211,6 @@
   				this.counter = 0;
   				this.generateTrigger();
   			} else if (this.counter % this.breakPoint < this.breakPoint / 5 || this.mode === GlitchPass.Mode.CONSTANT_MILD) {
-
   				uniforms.amount.value = Math.random() / 90.0;
   				uniforms.angle.value = THREE.Math.randFloat(-Math.PI, Math.PI);
   				uniforms.distortionX.value = THREE.Math.randFloat(0.0, 1.0);
@@ -2232,17 +2218,14 @@
   				uniforms.seedX.value = THREE.Math.randFloat(-0.3, 0.3);
   				uniforms.seedY.value = THREE.Math.randFloat(-0.3, 0.3);
   			} else if (this.mode === GlitchPass.Mode.SPORADIC) {
-
   				uniforms.active.value = false;
   			}
 
   			++this.counter;
 
   			if (this.renderToScreen) {
-
   				renderer.render(this.scene, this.camera);
   			} else {
-
   				renderer.render(this.scene, this.camera, writeBuffer, false);
   			}
   		}
@@ -2257,12 +2240,11 @@
   	}, {
   		key: "generateTrigger",
   		value: function generateTrigger() {
-
   			this.breakPoint = THREE.Math.randInt(120, 240);
   		}
 
   		/**
-     * Destroys the currently set texture, if any, and 
+     * Destroys the currently set texture, if any, and
      * generates a simple noise map.
      *
      * @method generatePerturbMap
@@ -2273,16 +2255,12 @@
   	}, {
   		key: "generatePerturbMap",
   		value: function generatePerturbMap(size) {
-
   			var i = void 0,
   			    x = void 0;
   			var l = size * size;
   			var data = new Float32Array(l * 3);
-
   			for (i = 0; i < l; ++i) {
-
   				x = THREE.Math.randFloat(0, 1);
-
   				data[i * 3] = x;
   				data[i * 3 + 1] = x;
   				data[i * 3 + 2] = x;
@@ -2294,7 +2272,6 @@
 
   			this.perturbMap = new THREE.DataTexture(data, size, size, THREE.RGBFormat, THREE.FloatType);
   			this.perturbMap.needsUpdate = true;
-
   			this.material.uniforms.tPerturb.value = this.perturbMap;
   		}
   	}]);
@@ -2848,60 +2825,58 @@
    *
    * Used to render any shader material as a 2D filter.
    *
-   * @class ShaderPass
+   * @class MergePass
    * @submodule passes
    * @extends Pass
    * @constructor
-   * @param {ShaderMaterial} material - The shader material to use.
-   * @param {String} [textureID="tDiffuse"] - The texture uniform identifier.
+   * @param {MixMaterial} material - The shader material to use when blending branches
+   * @param {options} object - includes options for the material
    */
 
   var MergePass = function (_Pass) {
   	inherits(MergePass, _Pass);
 
-  	function MergePass(branch, textureID0, textureID1, options) {
+  	function MergePass(branchFrom, branchTo, MixMaterial, options) {
   		classCallCheck(this, MergePass);
 
   		var _this = possibleConstructorReturn(this, Object.getPrototypeOf(MergePass).call(this));
 
-  		_this.branch = branch;
+  		_this.branchFrom = branchFrom;
+  		_this.branchTo = branchTo;
+
+  		console.log(branchFrom, branchTo);
 
   		_this.needsSwap = true;
 
-  		/**
-     * The name of the color sampler uniform of the given material.
-     * The pre-branch read buffer will be bound to this.
-     *
-     * @property textureID
-     * @type String
-     * @default "tDiffuse"
-     */
+  		if (!(MixMaterial instanceof THREE.ShaderMaterial)) {
+  			// default to CombineMaterial
+  			if ((typeof MixMaterial === "undefined" ? "undefined" : _typeof(MixMaterial)) === 'object') {
+  				options = MixMaterial;
+  			}
+  			MixMaterial = CombineMaterial;
+  		}
 
-  		_this.textureID0 = textureID0 !== undefined ? textureID0 : "tDiffuse";
+  		_this.options = options || {};
+  		_this.options.uniforms = [{
+  			name: 'texture1',
+  			type: 't',
+  			value: null
+  		}, {
+  			name: 'texture2',
+  			type: 't',
+  			value: null
+  		}, {
+  			name: 'opacity1',
+  			type: 'f',
+  			value: 1
+  		}, {
+  			name: 'opacity2',
+  			type: 'f',
+  			value: 0.5
+  		}];
 
-  		/**
-     * The name of the color sampler uniform of the given material.
-     * The branch-result read buffer will be bound to this.
-     *
-     * @property textureID
-     * @type String
-     * @default "tDiffuse"
-     */
-
-  		_this.textureID1 = textureID1 !== undefined ? textureID1 : "tProcessed";
-
-  		/**
-     * Combine shader material.
-     *
-     * @property combineMaterial
-     * @type CombineMaterial
-     * @private
-     */
-
-  		_this.combineMaterial = new CombineMaterial();
-  		_this.combineMaterial.uniforms.opacity1.value = options.opacity1 || 0;
-  		_this.combineMaterial.uniforms.opacity2.value = options.opacity2 || 0;
-
+  		_this.renderToScreen = _this.options.renderToScreen;
+  		_this.material = new MixMaterial();
   		_this.quad.material = _this.material;
 
   		return _this;
@@ -2919,22 +2894,27 @@
   	createClass(MergePass, [{
   		key: "render",
   		value: function render(renderer, readBuffer, writeBuffer) {
+  			var _this2 = this;
 
-  			if (this.material.uniforms[this.textureID] !== undefined) {
+  			var texture0 = readBuffer.texture;
+  			var texture1 = this.branchTo.readBuffer.texture;
 
-  				this.material.uniforms[this.textureID].value = readBuffer.texture;
-  			}
-
-  			if (this.material.uniforms[this.textureID1] !== undefined) {
-
-  				this.material.uniforms[this.textureID1].value = this.branch.originalReadBuffer.texture;
-  			}
+  			// distribute defaults and options
+  			this.options.uniforms.forEach(function (uniform) {
+  				// default textures
+  				if (uniform.name === 'texture1') {
+  					_this2.material.uniforms[uniform.name].value = uniform.value || texture0;
+  				} else if (uniform.name === 'texture2') {
+  					_this2.material.uniforms[uniform.name].value = uniform.value || texture1;
+  					// fill remaining uniforms
+  				} else if (_this2.material.uniforms[uniform.name] !== undefined && uniform.value) {
+  					_this2.material.uniforms[uniform.name].value = uniform.value;
+  				}
+  			});
 
   			if (this.renderToScreen) {
-
   				renderer.render(this.scene, this.camera);
   			} else {
-
   				renderer.render(this.scene, this.camera, writeBuffer, this.clear);
   			}
   		}
@@ -2954,7 +2934,7 @@
   var CLEAR_COLOR$1 = new THREE.Color();
 
   /**
-   * A pass that renders a given scene directly on screen or into the read buffer 
+   * A pass that renders a given scene directly on screen or into the read buffer
    * for further processing.
    *
    * @class RenderPass
@@ -2977,9 +2957,13 @@
 
   		var _this = possibleConstructorReturn(this, Object.getPrototypeOf(RenderPass).call(this, scene, camera, null));
 
-  		if (options === undefined) {
-  			options = {};
-  		}
+  		options = options || {
+  			renderToScreen: false
+  		};
+
+  		_this.renderToScreen = options.renderToScreen;
+
+  		_this.needsSwap = false;
 
   		/**
      * Override material.
@@ -3724,13 +3708,14 @@
 
   		// set default values for parameters if not set through arguments or through options object
   		options = options || {};
+
   		options.name = name || options.name || 'branch';
   		options.renderer = renderer || options.renderer || new THREE.WebGLRenderer();
 
-  		if (options.depthTexture !== true) {
+  		if (options.depthTexture === undefined) {
   			options.depthTexture = false;
   		}
-  		if (options.stencilBuffer !== true) {
+  		if (options.stencilBuffer === undefined) {
   			options.stencilBuffer = false;
   		}
 
@@ -3747,6 +3732,7 @@
      */
 
   		this.renderer.autoClear = options.autoclear || false;
+  		// this.renderer.state.setDepthWrite(false);
   		this.renderer.state.setDepthWrite(this.depthTexture);
 
   		/**
@@ -3799,73 +3785,14 @@
   	}
 
   	/**
-    * Renders all enabled passes in the order in which they were added.
+    * Creates a new render target by replicating the renderer's canvas.
     *
-    * @method render
-    * @param {Number} delta - The time between the last frame and the current one in seconds.
+    * @method createBuffer
+    * @param {Boolean} stencilBuffer - Whether the render target should have a stencil buffer.
+    * @return {WebGLRenderTarget} A fresh render target that equals the renderer's canvas.
     */
 
   	createClass(Branch, [{
-  		key: "render",
-  		value: function render(delta) {
-
-  			var readBuffer = this.readBuffer;
-  			var writeBuffer = this.writeBuffer;
-
-  			var maskActive = false;
-  			var i = void 0,
-  			    l = void 0,
-  			    pass = void 0,
-  			    buffer = void 0;
-  			var ctx = void 0,
-  			    state = void 0;
-
-  			for (i = 0, l = this.passes.length; i < l; ++i) {
-
-  				pass = this.passes[i];
-
-  				if (pass.enabled) {
-
-  					pass.render(this.renderer, readBuffer, writeBuffer, delta, maskActive);
-
-  					if (pass.needsSwap) {
-
-  						if (maskActive) {
-
-  							ctx = this.renderer.context;
-  							state = this.renderer.state;
-  							state.setStencilFunc(ctx.NOTEQUAL, 1, 0xffffffff);
-  							this.copyPass.render(this.renderer, readBuffer, writeBuffer);
-  							state.setStencilFunc(ctx.EQUAL, 1, 0xffffffff);
-  						}
-
-  						buffer = readBuffer;
-  						readBuffer = writeBuffer;
-  						writeBuffer = buffer;
-  					}
-
-  					if (pass instanceof MaskPass) {
-
-  						maskActive = true;
-  					} else if (pass instanceof ClearMaskPass) {
-
-  						maskActive = false;
-  					}
-  				}
-  			}
-
-  			return this;
-  		}
-
-  		/**
-     * Creates a new render target by replicating the renderer's canvas.
-     *
-     * @method createBuffer
-     * @param {Boolean} stencilBuffer - Whether the render target should have a stencil buffer.
-     * @return {WebGLRenderTarget} A fresh render target that equals the renderer's canvas.
-     */
-
-  	}, {
   		key: "createBuffer",
   		value: function createBuffer(stencilBuffer) {
 
@@ -3878,6 +3805,54 @@
   				format: alpha ? THREE.RGBAFormat : THREE.RGBFormat,
   				stencilBuffer: stencilBuffer
   			});
+  		}
+
+  		/**
+     * Renders all enabled passes in the order in which they were added.
+     *
+     * @method render
+     * @param {Number} delta - The time between the last frame and the current one in seconds.
+     */
+
+  	}, {
+  		key: "render",
+  		value: function render(delta) {
+  			var readBuffer = this.readBuffer;
+  			var writeBuffer = this.writeBuffer;
+
+  			var maskActive = false;
+  			var i = void 0,
+  			    l = void 0,
+  			    pass = void 0,
+  			    buffer = void 0;
+  			var ctx = void 0,
+  			    state = void 0;
+
+  			for (i = 0, l = this.passes.length; i < l; ++i) {
+  				pass = this.passes[i];
+  				if (pass.enabled) {
+  					pass.render(this.renderer, readBuffer, writeBuffer, delta, maskActive);
+  					if (pass.needsSwap) {
+  						if (maskActive) {
+  							ctx = this.renderer.context;
+  							state = this.renderer.state;
+  							state.setStencilFunc(ctx.NOTEQUAL, 1, 0xffffffff);
+  							this.copyPass.render(this.renderer, readBuffer, writeBuffer);
+  							state.setStencilFunc(ctx.EQUAL, 1, 0xffffffff);
+  						}
+  						buffer = readBuffer;
+  						readBuffer = writeBuffer;
+  						writeBuffer = buffer;
+  					}
+
+  					if (pass instanceof MaskPass) {
+  						maskActive = true;
+  					} else if (pass instanceof ClearMaskPass) {
+  						maskActive = false;
+  					}
+  				}
+  			}
+  			return this;
   		}
 
   		/**
@@ -3936,9 +3911,8 @@
   			this.readBuffer.setSize(width, height);
   			this.writeBuffer.setSize(width, height);
 
-  			for (i = 0, l = this.branches.main.passes.length; i < l; ++i) {
-
-  				this.passses[i].setSize(width, height);
+  			for (i = 0, l = this.passes.length; i < l; ++i) {
+  				this.passes[i].setSize(width, height);
   			}
 
   			return this;
@@ -4039,7 +4013,6 @@
   			depthTexture: depthTexture,
   			stencilBuffer: stencilBuffer
   		});
-  		this.currentBranch = 'main';
 
   		// moved the rest of this function to Branch
 
@@ -4061,9 +4034,11 @@
   			branchName = branchName || 'main';
   			var branch = this.branches[branchName];
   			if (!branch) {
-  				throw new Error("Branch \"" + branchName + "\" does not exist");
+  				// automatically create a new branch if one doesn't exist
+  				branch = this.branch(this.renderer, branchName);
   			}
-  			branch.addPass(pass, index);
+
+  			branch.addPass(pass, index, branchName);
   			return this;
   		}
 
@@ -4081,11 +4056,26 @@
   		value: function branch(renderer, branchName, options) {
   			renderer = renderer || this.renderer;
   			branchName = branchName || 'branch';
+  			options = options || {};
+
   			if (this.branches[branchName]) {
-  				throw new Error("Branch \"" + branchName + "\" already exists");
+  				// if branchname already exists, increment and create a new branch
+  				var i = 0;
+  				var newBranchName = branchName;
+  				while (this.branches[newBranchName]) {
+  					newBranchName = branchName + "_" + ++i;
+  				}
+  				branchName = newBranchName;
+  				// throw new Error(`Branch "${branchName}" already exists`);
   			}
-  			this.branches[branchName] = new Branch(renderer, branchName, options);
-  			this.addPass(new BranchPass(this.branches[branchName]));
+  			// register branch
+  			var branch = this.branches[branchName] = new Branch(renderer, branchName, options);
+  			this.addPass(new BranchPass(branch), null, branchName);
+
+  			if (options.chain === false) {
+  				return branch;
+  			}
+  			return this;
   		}
 
   		/**
@@ -4101,14 +4091,18 @@
 
   	}, {
   		key: "merge",
-  		value: function merge(branchName, textureName) {
-  			branchName = branchName || 'branch';
-  			textureName = textureName || 'texture0';
-  			var branch = this.branches[branchName];
-  			if (!branch) {
-  				throw new Error("Branch \"" + branchName + "\" does not exist");
+  		value: function merge(branchFrom, branchTo, combineShader, options) {
+  			// recall branch or allow to pass a branch directly
+  			branchFrom = branchFrom instanceof Branch ? branchFrom : this.branches[branchFrom];
+  			branchTo = branchTo instanceof Branch ? branchTo : this.branches[branchTo];
+  			if (!branchFrom) {
+  				throw new Error("Branch \"" + branchFrom + "\" does not exist.", branchFrom);
   			}
-  			this.addPass(new MergePass(branch, textureName));
+  			if (!branchTo) {
+  				throw new Error("Branch \"" + branchTo + "\" does not exist.", branchTo);
+  			}
+  			this.addPass(new MergePass(branchFrom, branchTo, combineShader, options));
+  			return this;
   		}
 
   		/**
@@ -4137,7 +4131,6 @@
   	}, {
   		key: "render",
   		value: function render(delta) {
-  			console.log(this.branches.main);
   			this.branches.main.render(delta);
 
   			return this;
