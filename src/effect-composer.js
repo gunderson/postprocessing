@@ -1,7 +1,10 @@
 import {
-	BranchPass,
+	BranchPass
+} from "./passes/branch";
+
+import {
 	MergePass
-} from "./passes";
+} from "./passes/merge";
 
 import {
 	Branch
@@ -97,7 +100,7 @@ export class EffectComposer {
 		}
 		// register branch
 		let branch = this.branches[branchName] = new Branch(renderer, branchName, options);
-		this.addPass(new BranchPass(branch), null, branchName);
+		if (branchName !== "main") this.addPass(new BranchPass(branch), null, branchName);
 
 		if (options.chain === false) { return branch; }
 		return this;
@@ -118,7 +121,7 @@ export class EffectComposer {
 		// recall branch or allow to pass a branch directly
 		branchFrom = branchFrom instanceof Branch ? branchFrom : this.branches[branchFrom];
 		branchTo = branchTo instanceof Branch ? branchTo : this.branches[branchTo];
-		if (!branchFrom) {
+		if ( !branchFrom ) {
 			throw new Error(`Branch "${branchFrom}" does not exist.`, branchFrom);
 		}
 		if (!branchTo) {

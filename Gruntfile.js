@@ -8,7 +8,7 @@ module.exports = function(grunt) {
 		banner: "/**\n" +
 			" * <%= pkg.name %> v<%= pkg.version %> build <%= date %>\n" +
 			" * <%= pkg.homepage %>\n" +
-			" * Copyright <%= date.slice(-4) %> <%= pkg.author.name %>, <%= pkg.license %>\n" + 
+			" * Copyright <%= date.slice(-4) %> <%= pkg.author.name %>, <%= pkg.license %>\n" +
 			" */\n",
 
 		jshint: {
@@ -132,7 +132,7 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks("grunt-lemon");
 
 	grunt.registerTask("default", ["build", "nodeunit"]);
-	grunt.registerTask("build", ["jshint", "rollup", "copy:bundle"]);
+	grunt.registerTask("build", [/*"jshint", */"rollup", "copy:bundle"]);
 	grunt.registerTask("test", ["jshint", "nodeunit"]);
 
 	grunt.registerTask("backup", ["restore", "copy:backup"]);

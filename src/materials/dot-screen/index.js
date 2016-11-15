@@ -1,4 +1,4 @@
-import THREE from "three";
+const THREE = require('three');
 
 const fragment = "uniform sampler2D tDiffuse;\n\nuniform float angle;\nuniform float scale;\nuniform float intensity;\n\nvarying vec2 vUv;\nvarying vec2 vUvPattern;\n\nfloat pattern() {\n\n\tfloat s = sin(angle);\n\tfloat c = cos(angle);\n\n\tvec2 point = vec2(c * vUvPattern.x - s * vUvPattern.y, s * vUvPattern.x + c * vUvPattern.y) * scale;\n\n\treturn (sin(point.x) * sin(point.y)) * 4.0;\n\n}\n\nvoid main() {\n\n\tvec4 texel = texture2D(tDiffuse, vUv);\n\tvec3 color = texel.rgb;\n\n\t#ifdef AVERAGE\n\n\t\tcolor = vec3((color.r + color.g + color.b) / 3.0);\n\n\t#endif\n\n\tcolor = vec3(color * 10.0 - 5.0 + pattern());\n\tcolor = texel.rgb + (color - texel.rgb) * intensity;\n\n\tgl_FragColor = vec4(color, texel.a);\n\n}\n";
 const vertex = "uniform vec4 offsetRepeat;\n\nvarying vec2 vUv;\nvarying vec2 vUvPattern;\n\nvoid main() {\n\n\tvUv = uv;\n\tvUvPattern = uv * offsetRepeat.zw + offsetRepeat.xy;\n\tgl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n\n}\n";

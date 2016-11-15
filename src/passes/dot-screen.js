@@ -1,6 +1,6 @@
 import { DotScreenMaterial } from "../materials";
 import { Pass } from "./pass";
-import THREE from "three";
+const THREE = require('three');
 
 /**
  * A render pass.

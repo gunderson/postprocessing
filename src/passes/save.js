@@ -1,6 +1,6 @@
 import { CopyMaterial } from "../materials";
 import { Pass } from "./pass";
-import THREE from "three";
+const THREE = require('three');
 
 /**
  * A save pass that renders the result from a previous 

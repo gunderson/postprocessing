@@ -1,6 +1,6 @@
 import { FilmMaterial } from "../materials";
 import { Pass } from "./pass";
-import THREE from "three";
+const THREE = require('three');
 
 /**
  * A film pass providing various cinematic effects.

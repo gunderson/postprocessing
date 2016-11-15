@@ -1,4 +1,4 @@
-import THREE from "three";
+const THREE = require('three');
 
 import areaImage from "./area-image";
 import searchImage from "./search-image";

@@ -1,7 +1,7 @@
 import {
 	Pass
 } from "./pass";
-import THREE from "three";
+const THREE = require('three');
 
 /**
  * A shader pass.

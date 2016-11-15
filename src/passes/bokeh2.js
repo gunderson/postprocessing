@@ -1,6 +1,6 @@
 import { Bokeh2Material } from "../materials";
 import { Pass } from "./pass";
-import THREE from "three";
+const THREE = require('three');
 
 /**
  * Depth of Field pass version 2.

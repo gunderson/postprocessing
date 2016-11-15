@@ -1,6 +1,6 @@
 import { BokehMaterial } from "../materials";
 import { Pass } from "./pass";
-import THREE from "three";
+const THREE = require('three');
 
 /**
  * Depth of Field pass using a bokeh shader.

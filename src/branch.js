@@ -1,13 +1,19 @@
+const THREE = require('three');
 import {
-	ClearMaskPass,
-	MaskPass,
 	ShaderPass
-} from "./passes";
+} from "./passes/shader";
+
+import {
+	ClearMaskPass
+} from "./passes/clear-mask";
+
+import {
+	MaskPass
+} from "./passes/mask";
 
 import {
 	CopyMaterial
-} from "./materials";
-import THREE from "three";
+} from "./materials/copy";
 
 /**
  * A Branch is an independant render chain that passes the last pass in its chain as a texture to a MergePass
@@ -29,7 +35,7 @@ export class Branch {
 		let renderer, name, options;
 
 		// check parameters and shift args if any have been omitted
-		if (args[0] instanceof THREE.WebGLRenderer) {
+		if (args[0] instanceof THREE.WebGLRenderer || typeof args[0].render === 'function') {
 			renderer = args[0];
 			args.shift();
 		}
@@ -68,7 +74,7 @@ export class Branch {
 		 * @type WebGLRenderer
 		 */
 
-		this.renderer.autoClear = options.autoclear || false;
+		this.renderer.autoClear = options.autoclear !== false;
 		// this.renderer.state.setDepthWrite(false);
 		this.renderer.state.setDepthWrite(this.depthTexture);
 
@@ -86,6 +92,7 @@ export class Branch {
 		this.readBuffer = this.createBuffer(this.stencilBuffer);
 		this.readBuffer.texture.generateMipmaps = false;
 
+
 		/**
 		 * The write buffer.
 		 *
@@ -94,10 +101,12 @@ export class Branch {
 		 * @private
 		 */
 
-		this.writeBuffer = this.readBuffer.clone();
+		this.writeBuffer = this.createBuffer(this.stencilBuffer);
+		this.writeBuffer.texture.generateMipmaps = false;
 
 		if (this.depthTexture) {
-			this.readBuffer.depthTexture = this.writeBuffer.depthTexture = new THREE.DepthTexture();
+			this.readBuffer.depthTexture = new THREE.DepthTexture();
+			this.writeBuffer.depthTexture = new THREE.DepthTexture();
 		}
 
 		/**
@@ -131,7 +140,6 @@ export class Branch {
 	 */
 
 	createBuffer(stencilBuffer) {
-
 		let size = this.renderer.getSize();
 		let alpha = this.renderer.context.getContextAttributes()
 			.alpha;
@@ -144,6 +152,12 @@ export class Branch {
 		});
 	}
 
+	swapBuffers() {
+		let buffer = this.readBuffer;
+		this.readBuffer = this.writeBuffer;
+		this.writeBuffer = buffer;
+	}
+
 	/**
 	 * Renders all enabled passes in the order in which they were added.
 	 *
@@ -152,35 +166,32 @@ export class Branch {
 	 */
 
 	render(delta) {
-		let readBuffer = this.readBuffer;
-		let writeBuffer = this.writeBuffer;
-
 		let maskActive = false;
-		let i, l, pass, buffer;
+		let i, l, pass;
 		let ctx, state;
 
 		for (i = 0, l = this.passes.length; i < l; ++i) {
 			pass = this.passes[i];
-			if (pass.enabled) {
-				pass.render(this.renderer, readBuffer, writeBuffer, delta, maskActive);
-				if (pass.needsSwap) {
-					if (maskActive) {
-						ctx = this.renderer.context;
-						state = this.renderer.state;
-						state.setStencilFunc(ctx.NOTEQUAL, 1, 0xffffffff);
-						this.copyPass.render(this.renderer, readBuffer, writeBuffer);
-						state.setStencilFunc(ctx.EQUAL, 1, 0xffffffff);
-					}
-					buffer = readBuffer;
-					readBuffer = writeBuffer;
-					writeBuffer = buffer;
-				}
 
-				if (pass instanceof MaskPass) {
-					maskActive = true;
-				} else if (pass instanceof ClearMaskPass) {
-					maskActive = false;
+			if (pass.enabled === false) continue;
+
+			pass.render(this.renderer, this.readBuffer, this.writeBuffer, delta, maskActive);
+
+			if (pass.needsSwap) {
+				if (maskActive) {
+					ctx = this.renderer.context;
+					state = this.renderer.state;
+					state.setStencilFunc(ctx.NOTEQUAL, 1, 0xffffffff);
+					this.copyPass.render(this.renderer, this.readBuffer, this.writeBuffer);
+					state.setStencilFunc(ctx.EQUAL, 1, 0xffffffff);
 				}
+				this.swapBuffers();
+			}
+
+			if (pass instanceof MaskPass) {
+				maskActive = true;
+			} else if (pass instanceof ClearMaskPass) {
+				maskActive = false;
 			}
 		}
 		return this;
@@ -241,7 +252,6 @@ export class Branch {
 		this.renderer.setSize(width, height);
 		this.readBuffer.setSize(width, height);
 		this.writeBuffer.setSize(width, height);
-
 
 		for (i = 0, l = this.passes.length; i < l; ++i) {
 			this.passes[i].setSize(width, height);

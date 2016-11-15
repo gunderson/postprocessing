@@ -6,7 +6,7 @@ import {
 } from "../materials";
 
 import { Pass } from "./pass";
-import THREE from "three";
+const THREE = require('three');
 
 /**
  * Used for saving the original clear color during the rendering process of the 

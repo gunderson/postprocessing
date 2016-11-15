@@ -5,7 +5,7 @@ import {
 } from "../materials";
 
 import { Pass } from "./pass";
-import THREE from "three";
+const THREE = require('three');
 
 /**
  * Subpixel Morphological Antialiasing (SMAA) v2.8.

@@ -12,6 +12,7 @@ export class BranchPass extends Pass {
 		this.branch.originalReadBuffer = readBuffer;
 		this.branch.writeBuffer = writeBuffer.clone();
 		this.branch.readBuffer = readBuffer.clone();
+		
 		return this.branch;
 	}
 }

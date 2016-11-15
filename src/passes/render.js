@@ -1,7 +1,7 @@
 import {
 	Pass
 } from "./pass";
-import THREE from "three";
+const THREE = require('three');
 
 /**
  * Used for saving the original clear color during rendering.
@@ -42,6 +42,8 @@ export class RenderPass extends Pass {
 
 		this.renderToScreen = options.renderToScreen;
 
+
+		// needs to be swapped if you write into the writebuffer, and intend the next pass to read from the readBuffer
 		this.needsSwap = false;
 
 		/**
@@ -79,8 +81,7 @@ export class RenderPass extends Pass {
 		 * @default true
 		 */
 
-		this.clear = true;
-
+		this.clear = options.clearAlpha !== false;
 	}
 
 	/**
@@ -91,32 +92,21 @@ export class RenderPass extends Pass {
 	 * @param {WebGLRenderTarget} readBuffer - The read buffer.
 	 */
 
-	render(renderer, readBuffer) {
+	render(renderer, readBuffer, writeBuffer) {
 
 		let clearAlpha;
 		let state = renderer.state;
 
 		state.setDepthWrite(true);
-
 		this.scene.overrideMaterial = this.overrideMaterial;
 
 		if (this.clearColor !== null) {
-
 			CLEAR_COLOR.copy(renderer.getClearColor());
 			clearAlpha = renderer.getClearAlpha();
 			renderer.setClearColor(this.clearColor, this.clearAlpha);
-
 		}
 
-		if (this.renderToScreen) {
-
-			renderer.render(this.scene, this.camera, null, this.clear);
-
-		} else {
-
-			renderer.render(this.scene, this.camera, readBuffer, this.clear);
-
-		}
+		renderer.render(this.scene, this.camera, this.renderToScreen ? null : readBuffer, this.clear);
 
 		if (this.clearColor !== null) {
 
